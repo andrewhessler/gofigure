@@ -15,34 +15,58 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   const [counter, setCounter] = useState<number | null>(null);
   const [imageCount, setImageCount] = useState<number>(0);
 
-  async function iterateSession() {
-    const imgPath = await invoke("get_random_image_from_dir", { dir: sessionConfig.dir }) as string | null;
+  async function startSession() {
+    const [imgPath, index] = await invoke("start_session", { dirs: [sessionConfig.dir] }) as [string, number];
+    setImageCount((count) => {
+      if (count + 1 > sessionConfig.count) {
+        endSession();
+      }
+      const assetUrl = convertFileSrc(imgPath);
 
-    if (imgPath) {
-      setImageCount((count) => {
-        if (count + 1 > sessionConfig.count) {
-          endSession();
-        }
-        const assetUrl = convertFileSrc(imgPath);
+      setImageUrl(assetUrl);
+      setCounter(sessionConfig.time);
 
-        setImageUrl(assetUrl);
-        setCounter(sessionConfig.time);
+      return index + 1;
+    })
+  }
 
-        return count + 1;
-      })
-    }
+  async function nextImage() {
+    const [imgPath, index] = await invoke("next_image") as [string, number];
+    setImageCount((count) => {
+      if (count + 1 > sessionConfig.count) {
+        endSession();
+      }
+      const assetUrl = convertFileSrc(imgPath);
+
+      setImageUrl(assetUrl);
+      setCounter(sessionConfig.time);
+
+      return index + 1;
+    })
+  }
+
+  async function prevImage() {
+    const [imgPath, index] = await invoke("previous_image") as [string, number];
+    setImageCount(() => {
+      const assetUrl = convertFileSrc(imgPath);
+
+      setImageUrl(assetUrl);
+      setCounter(sessionConfig.time);
+
+      return index + 1;
+    })
   }
 
   const started = useRef(false);
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    iterateSession();
+    startSession();
   }, [])
 
   useEffect(() => {
     if (counter === 0) {
-      iterateSession();
+      nextImage();
       return;
     }
     if (counter === null) return;
@@ -59,6 +83,8 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
       <h2>Counter: {counter}</h2>
       {imageUrl ? <img src={imageUrl} /> : <></>}
       <button onClick={endSession}>Exit</button>
+      <button onClick={nextImage}>Next</button>
+      <button onClick={prevImage}>Prev</button>
     </main>
   );
 }
