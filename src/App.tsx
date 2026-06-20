@@ -5,12 +5,12 @@ import { Session } from "./Session.tsx";
 
 function App() {
   const [sessionInProgress, setSessionInProgress] = useState<boolean>(false);
-  const [sessionConfig, setSessionConfig] = useState<{ count: number, time: number, dir: string } | null>();
+  const [sessionConfig, setSessionConfig] = useState<{ count: number, time: number, dirs: string[] } | null>();
 
   return !sessionInProgress ?
     (<Home startSession={
-      (imageCount, displayTime, dir) => {
-        setSessionConfig({ count: imageCount, time: displayTime, dir: dir });
+      (imageCount, displayTime, dirs) => {
+        setSessionConfig({ count: imageCount, time: displayTime, dirs: dirs });
         setSessionInProgress(true);
       }
     } />) : (<Session sessionConfig={sessionConfig!} endSession={() => { setSessionInProgress(false) }} />)

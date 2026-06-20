@@ -17,7 +17,6 @@ struct AppData {
     greatest_idx: usize,
     path_history: Vec<String>,
     image_pool: Vec<String>,
-    sqlite_conn: Pool<Sqlite>,
 }
 
 #[tauri::command]
@@ -124,12 +123,26 @@ fn skip_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
 }
 
 #[tauri::command]
-fn add_sources(state: State<'_, Mutex<AppData>>, dirs: Vec<&str>) -> Result<Vec<String>, CmdError> {
-    let st = state
-        .lock()
-        .expect("State should be accessible for add sources");
+async fn get_sources(pool: State<'_, Pool<Sqlite>>) -> Result<Vec<String>, CmdError> {
+    let dirs = queries::get_sources(&pool).await?;
+    Ok(dirs)
+}
 
-    let _ = queries::add_sources(&st.sqlite_conn, &dirs);
+#[tauri::command]
+async fn add_sources(
+    pool: State<'_, Pool<Sqlite>>,
+    dirs: Vec<&str>,
+) -> Result<Vec<String>, CmdError> {
+    queries::add_sources(&pool, &dirs).await?;
+    Ok(dirs.iter().map(|dir| dir.to_string()).collect())
+}
+
+#[tauri::command]
+async fn delete_sources(
+    pool: State<'_, Pool<Sqlite>>,
+    dirs: Vec<&str>,
+) -> Result<Vec<String>, CmdError> {
+    queries::delete_sources(&pool, &dirs).await?;
     Ok(dirs.iter().map(|dir| dir.to_string()).collect())
 }
 
@@ -145,6 +158,8 @@ impl serde::Serialize for CmdError {
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_dir = app
                 .handle()
@@ -152,32 +167,50 @@ pub fn run() {
                 .app_data_dir()
                 .expect("Data dir should be accessible");
 
+            std::fs::create_dir_all(&app_dir).expect("App data dir should be creatable");
+
             let connection_options = SqliteConnectOptions::new()
                 .filename(app_dir.join("gofigure.db"))
                 .create_if_missing(true);
-            let pool = pollster::block_on(SqlitePool::connect_with(connection_options))
+
+            let pool = tauri::async_runtime::block_on(SqlitePool::connect_with(connection_options))
                 .expect("Sqlite connection should be successful");
 
+            tauri::async_runtime::block_on(sqlx::migrate!("./migrations").run(&pool))
+                .expect("migrations should be able to run");
+
+            // Allow accessing images in source directories
+            let sources: Vec<String> = tauri::async_runtime::block_on(
+                sqlx::query_scalar("SELECT path FROM image_sources").fetch_all(&pool),
+            )
+            .expect("image sources should be queryable");
+
+            let scope = app.asset_protocol_scope();
+            for dir in &sources {
+                scope
+                    .allow_directory(dir, true)
+                    .expect("source directory should be allowable");
+            }
+            // ---
+
+            app.manage(pool);
             app.manage(Mutex::new(AppData {
                 session_running: false,
                 current_image_idx: 0,
                 greatest_idx: 0,
                 path_history: vec![],
                 image_pool: vec![],
-                sqlite_conn: pool,
             }));
             Ok(())
         })
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_persisted_scope::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             start_session,
             next_image,
             previous_image,
             skip_image,
+            get_sources,
             add_sources,
+            delete_sources,
         ])
         .run(tauri::generate_context!())
         .expect("Tauri application should successfully start");

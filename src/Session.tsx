@@ -6,7 +6,7 @@ export interface SessionProps {
   sessionConfig: {
     count: number;
     time: number;
-    dir: string;
+    dirs: string[];
   },
   endSession: () => void;
 }
@@ -32,7 +32,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   const [showButtons, setShowButtons] = useState<boolean>(true);
 
   async function startSession() {
-    const [imgPath, index] = await invoke("start_session", { dirs: [sessionConfig.dir] }) as [string, number];
+    const [imgPath, index] = await invoke("start_session", { dirs: sessionConfig.dirs }) as [string, number];
     setImageCount((count) => {
       if (count + 1 > sessionConfig.count) {
         endSession();

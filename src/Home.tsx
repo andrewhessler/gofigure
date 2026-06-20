@@ -1,30 +1,55 @@
+import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface HomeProps {
-  startSession: (imageCount: number, displayTime: number, imageDir: string) => void;
+  startSession: (imageCount: number, displayTime: number, imageDirs: string[]) => void;
 }
 
 export function Home({ startSession }: HomeProps) {
-  const [imageDir, setImageDir] = useState<string | null>(null);
+  const [imageDirs, setImageDirs] = useState<string[] | null>(null);
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
 
-  async function scope() {
-    const dir = await open({
-      multiple: false,
+  async function getSources() {
+    const dirs = await invoke("get_sources") as string[];
+    setImageDirs(dirs);
+  }
+
+  async function addSources() {
+    const stagedDirs = await open({
+      multiple: true,
       directory: true,
     });
-    setImageDir(dir);
+    const newDirs = await invoke("add_sources", { dirs: stagedDirs }) as string[];
+    if (newDirs) {
+      setImageDirs((dirs) => dirs ? dirs.concat(newDirs) : newDirs);
+    }
   }
+
+  async function deleteSources(dirs: string[]) {
+    const deletedDirs = await invoke("delete_sources", { dirs }) as string[];
+    if (deletedDirs) {
+      setImageDirs((dirs) => dirs!.filter((dir) => !deletedDirs.includes(dir)));
+    }
+  }
+
+  useEffect(() => {
+    getSources();
+  }, [])
 
   return (
     <main className="container">
       <h1>Welcome to the Home Screen</h1>
-      <button onClick={scope}>{!imageDir ? "Set Directory" : imageDir}</button>
+      <button onClick={addSources}>Add Sources</button>
+      {imageDirs?.map((dir) => (
+        <div onClick={() => deleteSources([dir])}>
+          {dir}
+        </div>
+      ))}
       Number of images: <input className="image-number-input" value={count} onInput={(e) => setCount(e.currentTarget.value)} />
       Display time: <input className="image-display-time" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
-      <button onClick={() => startSession(parseInt(count), parseInt(time), imageDir!)}>Start Session</button>
+      <button onClick={() => startSession(parseInt(count), parseInt(time), imageDirs!)}>Start Session</button>
     </main>
   );
 }
