@@ -27,4 +27,8 @@ tauri-plugin-persisted-scope = "2"
 tauri-plugin-fs = "2"
 rand = "0.10.1"
 walkdir = "2.5.0"
+sqlx = { version = "0.8.6", features = ["sqlite"] }
+pollster = "0.4.0"
+anyhow = "1.0.102"
+thiserror = "2.0.18"
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import "./Session.css";
 
 export interface SessionProps {
   sessionConfig: {
@@ -10,10 +11,25 @@ export interface SessionProps {
   endSession: () => void;
 }
 
+function formatTime(totalSeconds: number | null) {
+  if (!totalSeconds) {
+    return '00:00';
+  }
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const paddedMinutes = String(minutes).padStart(2, '0');
+  const paddedSeconds = String(seconds).padStart(2, '0');
+
+  return `${paddedMinutes}:${paddedSeconds}`;
+}
+
 export function Session({ sessionConfig, endSession }: SessionProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [counter, setCounter] = useState<number | null>(null);
   const [imageCount, setImageCount] = useState<number>(0);
+  const [showButtons, setShowButtons] = useState<boolean>(true);
 
   async function startSession() {
     const [imgPath, index] = await invoke("start_session", { dirs: [sessionConfig.dir] }) as [string, number];
@@ -57,6 +73,18 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
     })
   }
 
+  async function skipImage() {
+    const [imgPath, index] = await invoke("skip_image") as [string, number];
+    setImageCount(() => {
+      const assetUrl = convertFileSrc(imgPath);
+
+      setImageUrl(assetUrl);
+      setCounter(sessionConfig.time);
+
+      return index + 1;
+    })
+  }
+
   const started = useRef(false);
   useEffect(() => {
     if (started.current) return;
@@ -75,16 +103,30 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   }, [counter])
 
   return (
-    <main className="container">
-      <h1>Welcome to the session!</h1>
-      <h2>Dir: {sessionConfig.dir}</h2>
-      <h2>Count: {imageCount}/{sessionConfig.count}</h2>
-      <h2>Time: {sessionConfig.time}</h2>
-      <h2>Counter: {counter}</h2>
-      {imageUrl ? <img src={imageUrl} /> : <></>}
-      <button onClick={endSession}>Exit</button>
-      <button onClick={nextImage}>Next</button>
-      <button onClick={prevImage}>Prev</button>
+    <main className="session-container">
+      <div className="image-view" onClick={() => setShowButtons((isShowing) => !isShowing)}>
+        {imageUrl ? <img src={imageUrl} /> : <></>}
+      </div>
+      <div className="bottom-info">
+        <div>
+          <span>Count: {imageCount}/{sessionConfig.count}</span>
+        </div>
+        <div className="image-control">
+          {showButtons ?
+            <>
+              <button onClick={prevImage}>Prev</button>
+              <button onClick={nextImage}>Next</button>
+              <button onClick={skipImage}>Skip</button>
+            </>
+            : <></>}
+        </div>
+        <div>
+          <span className="timer">{formatTime(counter)}</span>
+        </div>
+        <div>
+          <button onClick={endSession}>Exit</button>
+        </div>
+      </div>
     </main>
   );
 }
