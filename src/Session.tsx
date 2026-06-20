@@ -125,7 +125,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   }
 
   async function prevImage() {
-    const [imgPath, index] = await invoke("previous_image") as [string, number];
+    const [imgPath, index] = await invoke("prev_image") as [string, number];
     const assetUrl = convertFileSrc(imgPath);
 
     setImageUrl(assetUrl);
