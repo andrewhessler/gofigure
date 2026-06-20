@@ -36,4 +36,9 @@ img {
 
 .timer {
   font-size: 24px;
+  font-weight: 900;
+}
+
+.timer-color {
+  color: #d19a66;
 }

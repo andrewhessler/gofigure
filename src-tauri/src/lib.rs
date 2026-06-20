@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::Mutex;
 
 use rand::seq::IndexedRandom;
@@ -17,11 +18,43 @@ struct AppData {
     greatest_idx: usize,
     path_history: Vec<String>,
     image_pool: Vec<String>,
+    repeat_cache: VecDeque<String>,
+}
+
+const REPEAT_CACHE_SIZE: usize = 100;
+
+fn get_new_image(image_pool: &mut Vec<String>, repeat_cache: &mut VecDeque<String>) -> String {
+    let mut rng = rand::rng();
+    let new_image_path: String;
+
+    if repeat_cache.len() >= REPEAT_CACHE_SIZE {
+        let freed_image_path = repeat_cache
+            .pop_front()
+            .expect("Repeat Cache should contain path to pop");
+        image_pool.push(freed_image_path);
+    }
+
+    if !image_pool.is_empty() {
+        println!("Grabbing from image_pool");
+        new_image_path = image_pool.choose(&mut rng).unwrap().to_owned();
+        repeat_cache.push_back(new_image_path.clone());
+        image_pool.retain(|v| *v != new_image_path);
+    } else if !repeat_cache.is_empty() {
+        println!("Grabbing from repeat_cache");
+        new_image_path = repeat_cache.pop_front().unwrap();
+        repeat_cache.push_back(new_image_path.clone());
+    } else {
+        panic!(
+            "No images to serve from repeat cache or image_pool, presumably no sources provided"
+        );
+    }
+
+    new_image_path
 }
 
 #[tauri::command]
 fn start_session(state: State<'_, Mutex<AppData>>, dirs: Vec<&str>) -> (String, usize) {
-    let mut st = state
+    let st = &mut *state
         .lock()
         .expect("State should be accessible for starting session");
     st.session_running = true;
@@ -41,13 +74,11 @@ fn start_session(state: State<'_, Mutex<AppData>>, dirs: Vec<&str>) -> (String, 
         );
     }
 
-    let mut rng = rand::rng();
+    let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
 
-    let random_path = st.image_pool.choose(&mut rng).unwrap().to_owned();
+    st.path_history.push(new_image_path.clone());
 
-    st.path_history.push(random_path.clone());
-
-    (random_path, 0) // cheat and return 0 idx for starting session...
+    (new_image_path, 0) // cheat and return 0 idx for starting session...
 }
 
 #[tauri::command]
@@ -56,7 +87,7 @@ fn next_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
     // Check if new idx, otherwise grab from path_history
     // if new, update idx, grab new path, update history, update greatest
 
-    let mut st = state
+    let st = &mut *state
         .lock()
         .expect("State should be accessible for next image");
 
@@ -71,15 +102,14 @@ fn next_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
     }
 
     // Otherwise grab another image
-    let mut rng = rand::rng();
-    let random_path = st.image_pool.choose(&mut rng).unwrap().to_owned();
+    let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
 
     st.current_image_idx += 1;
     st.greatest_idx += 1;
 
-    st.path_history.push(random_path.clone());
+    st.path_history.push(new_image_path.clone());
 
-    (random_path, st.current_image_idx)
+    (new_image_path, st.current_image_idx)
 }
 
 #[tauri::command]
@@ -103,16 +133,15 @@ fn previous_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
 
 #[tauri::command]
 fn skip_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
-    let mut st = state
+    let st = &mut *state
         .lock()
         .expect("State should be accessible for skip image");
     if st.current_image_idx == st.greatest_idx {
         // replace last image with a new path, idx stays the same
         st.path_history.pop();
-        let mut rng = rand::rng();
-        let random_path = st.image_pool.choose(&mut rng).unwrap().to_owned();
+        let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
 
-        return (random_path, st.current_image_idx);
+        return (new_image_path, st.current_image_idx);
     }
     // otherwise just move forward like next would
     st.current_image_idx += 1;
@@ -200,6 +229,7 @@ pub fn run() {
                 greatest_idx: 0,
                 path_history: vec![],
                 image_pool: vec![],
+                repeat_cache: VecDeque::new(),
             }));
             Ok(())
         })
