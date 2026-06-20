@@ -8,7 +8,7 @@ export interface SessionProps {
     time: number;
     dirs: string[];
   },
-  endSession: () => void;
+  endSession: (secondsPerImage: number) => void;
 }
 
 function formatTime(totalSeconds: number | null) {
@@ -102,7 +102,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
 
   async function startSession() {
     if (imageCount + 1 > sessionConfig.count) {
-      endSession();
+      endSession(sessionConfig.time);
     }
     const [imgPath, index] = await invoke("start_session", { dirs: sessionConfig.dirs }) as [string, number];
     const assetUrl = convertFileSrc(imgPath);
@@ -113,10 +113,10 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   }
 
   async function nextImage() {
-    const [imgPath, index] = await invoke("next_image") as [string, number];
     if (imageCount + 1 > sessionConfig.count) {
-      endSession();
+      endSession(sessionConfig.time);
     }
+    const [imgPath, index] = await invoke("next_image") as [string, number];
     const assetUrl = convertFileSrc(imgPath);
 
     setImageUrl(assetUrl);
@@ -198,7 +198,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
           <span className={"timer" + (timerColorOn ? " timer-color" : "")}>{formatTime(counter)}</span>
         </div>
         <div>
-          <button onClick={endSession}>Exit</button>
+          <button onClick={() => endSession(sessionConfig.time)}>Exit</button>
         </div>
       </div>
     </main>

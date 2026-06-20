@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { Home } from "./Home.tsx";
 import { Session } from "./Session.tsx";
+import { invoke } from "@tauri-apps/api/core";
 
 function App() {
   const [sessionInProgress, setSessionInProgress] = useState<boolean>(false);
@@ -13,7 +14,10 @@ function App() {
         setSessionConfig({ count: imageCount, time: displayTime, dirs: dirs });
         setSessionInProgress(true);
       }
-    } />) : (<Session sessionConfig={sessionConfig!} endSession={() => { setSessionInProgress(false) }} />)
+    } />) : (<Session sessionConfig={sessionConfig!} endSession={async (secondsPerImage) => {
+      setSessionInProgress(false);
+      const historyEntryId = await invoke("end_session", { secondsPerImage }) as [string, number];
+    }} />)
 
 
 }

@@ -1,18 +1,25 @@
 use std::{collections::VecDeque, sync::Mutex};
 
 use rand::seq::IndexedRandom;
+use sqlx::{Pool, Sqlite};
 use tauri::State;
 use walkdir::WalkDir;
 
-use crate::AppData;
+use crate::{
+    queries::{self, history::HistoryEntryRequest},
+    util::CmdError,
+    AppData,
+};
 
 const REPEAT_CACHE_SIZE: usize = 100;
 
 fn get_new_image(image_pool: &mut Vec<String>, repeat_cache: &mut VecDeque<String>) -> String {
+    // might want active_image_pool and image_pool to check if the things being popped off
+    // repeat_cache are even part of the current session...
     let mut rng = rand::rng();
     let new_image_path: String;
 
-    if repeat_cache.len() >= REPEAT_CACHE_SIZE {
+    if repeat_cache.len() > REPEAT_CACHE_SIZE {
         let freed_image_path = repeat_cache
             .pop_front()
             .expect("Repeat Cache should contain path to pop");
@@ -32,11 +39,19 @@ fn get_new_image(image_pool: &mut Vec<String>, repeat_cache: &mut VecDeque<Strin
         );
     }
 
+    println!("repeat cache iter: {:?}", repeat_cache);
+
     new_image_path
 }
 
 #[tauri::command]
-pub fn start_session(state: State<'_, Mutex<AppData>>, dirs: Vec<&str>) -> (String, usize) {
+pub async fn start_session(
+    state: State<'_, Mutex<AppData>>,
+    conn: State<'_, Pool<Sqlite>>,
+    dirs: Vec<&str>,
+) -> Result<(String, u64), CmdError> {
+    let repeat_cache = queries::repeat_cache::get_repeat_cache(&conn).await?;
+
     let st = &mut *state
         .lock()
         .expect("State should be accessible for starting session");
@@ -45,6 +60,8 @@ pub fn start_session(state: State<'_, Mutex<AppData>>, dirs: Vec<&str>) -> (Stri
     st.greatest_idx = 0;
     st.path_history = vec![];
     st.image_pool = vec![];
+    st.repeat_cache = repeat_cache.into();
+    println!("repeat cache: {:?}", st.repeat_cache);
 
     for dir in dirs {
         st.image_pool.extend(
@@ -57,11 +74,47 @@ pub fn start_session(state: State<'_, Mutex<AppData>>, dirs: Vec<&str>) -> (Stri
         );
     }
 
+    println!("image_pool: {:?}", st.image_pool);
+    st.image_pool.retain(|dir| !st.repeat_cache.contains(dir)); // :grimace:
+    println!("image_pool: {:?}", st.image_pool);
+
     let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
 
     st.path_history.push(new_image_path.clone());
 
-    (new_image_path, 0) // cheat and return 0 idx for starting session...
+    Ok((new_image_path, 0)) // cheat and return 0 idx for starting session...
+}
+
+#[tauri::command]
+pub async fn end_session(
+    state: State<'_, Mutex<AppData>>,
+    conn: State<'_, Pool<Sqlite>>,
+    seconds_per_image: u64,
+) -> Result<u64, CmdError> {
+    // set session_running to false
+    // write repeat cache
+    // write session history
+    let (images, repeat_cache) = {
+        let st = &mut *state
+            .lock()
+            .expect("State should be accessible for starting session");
+        st.session_running = false;
+        (st.path_history.clone(), st.repeat_cache.clone())
+    };
+    println!("end session repeat cache: {:?}", repeat_cache);
+
+    let history_id = queries::history::save_history_entry(
+        &conn,
+        HistoryEntryRequest {
+            images,
+            seconds_per_image,
+        },
+    )
+    .await?;
+
+    let _ = queries::repeat_cache::populate_repeat_cache(&conn, Vec::from(repeat_cache)).await;
+
+    Ok(history_id as u64)
 }
 
 #[tauri::command]

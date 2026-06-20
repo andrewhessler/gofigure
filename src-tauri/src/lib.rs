@@ -69,6 +69,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             // session
             commands::session::start_session,
+            commands::session::end_session,
             commands::session::next_image,
             commands::session::prev_image,
             commands::session::skip_image,
