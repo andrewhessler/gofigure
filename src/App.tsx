@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import { Home } from "./Home.tsx";
+import { Home } from "./Home/Home.tsx";
 import { Session } from "./Session.tsx";
 import { invoke } from "@tauri-apps/api/core";
 

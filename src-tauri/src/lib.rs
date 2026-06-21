@@ -77,6 +77,8 @@ pub fn run() {
             commands::source::get_sources,
             commands::source::add_sources,
             commands::source::delete_sources,
+            // history
+            commands::history::get_history,
         ])
         .run(tauri::generate_context!())
         .expect("Tauri application should successfully start");
