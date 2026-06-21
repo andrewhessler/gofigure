@@ -90,7 +90,7 @@ pub async fn end_session(
     state: State<'_, Mutex<AppData>>,
     conn: State<'_, Pool<Sqlite>>,
     seconds_per_image: u64,
-) -> Result<u64, CmdError> {
+) -> Result<Vec<String>, CmdError> {
     // set session_running to false
     // write repeat cache
     // write session history
@@ -103,10 +103,10 @@ pub async fn end_session(
     };
     println!("end session repeat cache: {:?}", repeat_cache);
 
-    let history_id = queries::history::save_history_entry(
+    queries::history::save_history_entry(
         &conn,
         HistoryEntryRequest {
-            images,
+            images: images.clone(),
             seconds_per_image,
         },
     )
@@ -114,7 +114,7 @@ pub async fn end_session(
 
     let _ = queries::repeat_cache::populate_repeat_cache(&conn, Vec::from(repeat_cache)).await;
 
-    Ok(history_id as u64)
+    Ok(images)
 }
 
 #[tauri::command]

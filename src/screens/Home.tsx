@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 interface HomeProps {
   startSession: (imageCount: number, displayTime: number, imageDirs: string[]) => void;
   viewHistory: () => void;
+  viewSettings: () => void;
 }
 
-export function Home({ startSession, viewHistory }: HomeProps) {
+export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
   const [imageDirs, setImageDirs] = useState<string[] | null>(null);
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
@@ -43,6 +44,7 @@ export function Home({ startSession, viewHistory }: HomeProps) {
     <main className="container">
       <h1>Welcome to the Home Screen</h1>
       <button onClick={viewHistory}>View History</button>
+      <button onClick={viewSettings}>View Settings</button>
       <button onClick={addSources}>Add Sources</button>
       {imageDirs?.map((dir) => (
         <div onClick={() => deleteSources([dir])}>
