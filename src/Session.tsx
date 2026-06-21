@@ -103,6 +103,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   async function startSession() {
     if (imageCount + 1 > sessionConfig.count) {
       endSession(sessionConfig.time);
+      return;
     }
     const [imgPath, index] = await invoke("start_session", { dirs: sessionConfig.dirs }) as [string, number];
     const assetUrl = convertFileSrc(imgPath);
@@ -115,6 +116,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
   async function nextImage() {
     if (imageCount + 1 > sessionConfig.count) {
       endSession(sessionConfig.time);
+      return;
     }
     const [imgPath, index] = await invoke("next_image") as [string, number];
     const assetUrl = convertFileSrc(imgPath);
@@ -171,7 +173,7 @@ export function Session({ sessionConfig, endSession }: SessionProps) {
 
     if (!deadlineRef.current) return;
     const remainingMs = deadlineRef.current - performance.now();
-    const delay = (remainingMs - (counter - 1) * 1000) % 1000;
+    const delay = remainingMs - (counter - 1) * 1000;
     const id = setTimeout(() => setCounter((counter) => counter! - 1), Math.max(0, delay));
     return () => clearTimeout(id);
   }, [counter])
