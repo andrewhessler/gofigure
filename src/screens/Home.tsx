@@ -1,17 +1,16 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState } from "react";
-import { History } from "./History/History";
 
 interface HomeProps {
   startSession: (imageCount: number, displayTime: number, imageDirs: string[]) => void;
+  viewHistory: () => void;
 }
 
-export function Home({ startSession }: HomeProps) {
+export function Home({ startSession, viewHistory }: HomeProps) {
   const [imageDirs, setImageDirs] = useState<string[] | null>(null);
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
-  const [viewingHistory, setViewingHistory] = useState<boolean>(false);
 
   async function getSources() {
     const dirs = await invoke("get_sources") as string[];
@@ -40,10 +39,10 @@ export function Home({ startSession }: HomeProps) {
     getSources();
   }, [])
 
-  return viewingHistory ? (<><History closeHistory={() => setViewingHistory(false)} /></>) : (
+  return (
     <main className="container">
       <h1>Welcome to the Home Screen</h1>
-      <button onClick={() => setViewingHistory(true)}>View History</button>
+      <button onClick={viewHistory}>View History</button>
       <button onClick={addSources}>Add Sources</button>
       {imageDirs?.map((dir) => (
         <div onClick={() => deleteSources([dir])}>

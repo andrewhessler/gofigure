@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import './History.css';
-import { Review } from "./Review/Review";
 
 type HistoryReturn = {
   id: number;
@@ -17,9 +16,8 @@ type HistoryEntry = {
   images: string[];
 }
 
-export function History({ closeHistory }: { closeHistory: () => void }) {
+export function History({ closeHistory, openReview }: { closeHistory: () => void, openReview: (images: string[]) => void, }) {
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[] | null>(null);
-  const [reviewId, setReviewId] = useState<number | null>(null);
 
   async function getHistoryEntries() {
     const entries = await invoke("get_history") as HistoryReturn[];
@@ -38,9 +36,7 @@ export function History({ closeHistory }: { closeHistory: () => void }) {
     getHistoryEntries();
   }, [])
 
-  return reviewId ? (<>
-    <Review closeReview={() => setReviewId(null)} images={historyEntries!.find((v) => v.id === reviewId)!.images} />
-  </>) : (
+  return (
     <main className="container">
       <button onClick={closeHistory}>Close History</button>
       {historyEntries?.map((entry) => (
@@ -48,7 +44,7 @@ export function History({ closeHistory }: { closeHistory: () => void }) {
           <div>{entry.completedDatetime.toLocaleDateString()}</div>
           <div>{entry.secondsPerImage}</div>
           <div>{entry.images.length} images</div>
-          <button onClick={() => setReviewId(entry.id)}>&gt;</button>
+          <button onClick={() => openReview(historyEntries.find((v) => v.id === entry.id)!.images)}>&gt;</button>
         </div>
       ))}
     </main>
