@@ -11,7 +11,7 @@ use crate::{
     AppData,
 };
 
-const REPEAT_CACHE_SIZE: usize = 100;
+const REPEAT_CACHE_SIZE: usize = 20;
 
 fn get_new_image(image_pool: &mut Vec<String>, repeat_cache: &mut VecDeque<String>) -> String {
     // might want active_image_pool and image_pool to check if the things being popped off
