@@ -16,7 +16,8 @@ function App() {
       }
     } />) : (<Session sessionConfig={sessionConfig!} endSession={async (secondsPerImage) => {
       setSessionInProgress(false);
-      const historyEntryId = await invoke("end_session", { secondsPerImage }) as [string, number];
+      // const historyEntryId = 
+      await invoke("end_session", { secondsPerImage }) as [string, number];
     }} />)
 
 
