@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO session_history (completed_timestamp, seconds_per_image, images)\n        VALUES (?, ?, ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "6382e0d10f01cfddecd0412df31d83d9fa5ac19a1c6c0e317d9341e939ec7573"
+}

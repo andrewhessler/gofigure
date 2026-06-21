@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT * FROM session_history ORDER BY completed_timestamp DESC LIMIT 100\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "completed_timestamp",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "seconds_per_image",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "images",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1977d683b6e3d3b552bfb21089635b882760b58a803bb1440adde93206b4908e"
+}

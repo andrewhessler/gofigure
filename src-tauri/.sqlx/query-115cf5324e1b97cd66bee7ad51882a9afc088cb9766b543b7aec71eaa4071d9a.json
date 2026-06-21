@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT path FROM image_sources\n            ",
+  "query": "\n        SELECT path FROM repeat_cache ORDER BY sort ASC\n        ",
   "describe": {
     "columns": [
       {
@@ -16,5 +16,5 @@
       false
     ]
   },
-  "hash": "516bce4aa24f98007719fd56be4a2cc3397ab8748b63084b2c8403196a2d5b5f"
+  "hash": "115cf5324e1b97cd66bee7ad51882a9afc088cb9766b543b7aec71eaa4071d9a"
 }
