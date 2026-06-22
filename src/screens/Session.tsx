@@ -154,7 +154,9 @@ export function Session({ sessionConfig, endSession, appSettings }: SessionProps
 
   useEffect(() => {
     if (counter === 0) {
-      playClick('accent');
+      if (appSettings.soundOnNextImage) {
+        playClick('accent');
+      }
       nextImage();
       return;
     }

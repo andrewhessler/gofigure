@@ -17,6 +17,7 @@ function App() {
     soundAt15: true,
     soundAt60: true,
     soundAtHalf: true,
+    soundOnNextImage: true,
     reviewAfterSession: false,
     noRepeatSize: 20,
     noRepeatBehavior: "no-repeat-for-n-images",
@@ -77,10 +78,12 @@ function App() {
         saveSettings={async (appSettings) => {
           setSettings(appSettings);
           await invoke("save_settings", {
-            appSettings: {
-              ...appSettings,
-            }
+            settings: appSettings,
           });
+          setScreen({ name: "home" });
+        }}
+        exitSettings={() => {
+          setScreen({ name: "home" });
         }}
         currentSettings={settings}
       />)

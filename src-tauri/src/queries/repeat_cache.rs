@@ -35,3 +35,15 @@ pub async fn get_repeat_cache(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<String>
 
     Ok(cache)
 }
+
+pub async fn delete_cache(conn: &Pool<Sqlite>) -> anyhow::Result<()> {
+    sqlx::query_scalar!(
+        r"
+        DELETE FROM repeat_cache
+        "
+    )
+    .execute(conn)
+    .await?;
+
+    Ok(())
+}

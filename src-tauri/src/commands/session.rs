@@ -6,40 +6,51 @@ use tauri::State;
 use walkdir::WalkDir;
 
 use crate::{
-    queries::{self, history::HistoryEntryRequest},
+    queries::{self, history::HistoryEntryRequest, settings::AppSettings},
     util::CmdError,
     AppData,
 };
 
-const REPEAT_CACHE_SIZE: usize = 20;
-
-fn get_new_image(image_pool: &mut Vec<String>, repeat_cache: &mut VecDeque<String>) -> String {
+fn get_new_image(
+    image_pool: &mut Vec<String>,
+    repeat_cache: &mut VecDeque<String>,
+    app_settings: &AppSettings,
+) -> String {
     // might want active_image_pool and image_pool to check if the things being popped off
     // repeat_cache are even part of the current session...
     let mut rng = rand::rng();
     let new_image_path: String;
 
-    if repeat_cache.len() > REPEAT_CACHE_SIZE {
+    // only free images if no_repeat_behavior is n based
+    if app_settings.no_repeat_behavior == "no-repeat-for-n-images"
+        && repeat_cache.len() > app_settings.no_repeat_size as usize
+    {
         let freed_image_path = repeat_cache
             .pop_front()
             .expect("Repeat Cache should contain path to pop");
         image_pool.push(freed_image_path);
     }
 
-    if !image_pool.is_empty() {
-        new_image_path = image_pool.choose(&mut rng).unwrap().to_owned();
-        repeat_cache.push_back(new_image_path.clone());
-        image_pool.retain(|v| *v != new_image_path);
-    } else if !repeat_cache.is_empty() {
-        new_image_path = repeat_cache.pop_front().unwrap();
-        repeat_cache.push_back(new_image_path.clone());
-    } else {
-        panic!(
+    match app_settings.no_repeat_behavior.as_str() {
+        "allow-repeats-always" => {
+            new_image_path = image_pool.choose(&mut rng).unwrap().to_owned();
+        }
+        "no-repeat-for-session" | "no-repeat-for-n-images" => {
+            if !image_pool.is_empty() {
+                new_image_path = image_pool.choose(&mut rng).unwrap().to_owned();
+                repeat_cache.push_back(new_image_path.clone());
+                image_pool.retain(|v| *v != new_image_path);
+            } else if !repeat_cache.is_empty() {
+                new_image_path = repeat_cache.pop_front().unwrap();
+                repeat_cache.push_back(new_image_path.clone());
+            } else {
+                panic!(
             "No images to serve from repeat_cache or image_pool, presumably no sources provided"
         );
+            }
+        }
+        _ => panic!("Unknown repeat behavior!"),
     }
-
-    println!("repeat cache iter: {:?}", repeat_cache);
 
     new_image_path
 }
@@ -61,7 +72,10 @@ pub async fn start_session(
     st.path_history = vec![];
     st.image_pool = vec![];
     st.repeat_cache = repeat_cache.into();
-    println!("repeat cache: {:?}", st.repeat_cache);
+    if st.settings.no_repeat_behavior == "allow-repeats-always" {
+        // cheat for now
+        st.repeat_cache = VecDeque::new();
+    }
 
     for dir in dirs {
         st.image_pool.extend(
@@ -74,11 +88,9 @@ pub async fn start_session(
         );
     }
 
-    println!("image_pool: {:?}", st.image_pool);
     st.image_pool.retain(|dir| !st.repeat_cache.contains(dir)); // :grimace:
-    println!("image_pool: {:?}", st.image_pool);
 
-    let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
+    let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache, &st.settings);
 
     st.path_history.push(new_image_path.clone());
 
@@ -94,15 +106,21 @@ pub async fn end_session(
     // set session_running to false
     // write repeat cache
     // write session history
-    let (images, repeat_cache) = {
+    let (images, repeat_cache, no_repeat_behavior) = {
         let st = &mut *state
             .lock()
             .expect("State should be accessible for starting session");
         st.session_running = false;
-        (st.path_history.clone(), st.repeat_cache.clone())
+        (
+            st.path_history.clone(),
+            st.repeat_cache.clone(),
+            st.settings.no_repeat_behavior.clone(),
+        )
     };
-    println!("end session repeat cache: {:?}", repeat_cache);
 
+    if no_repeat_behavior == "no-repeat-for-session" {
+        let _ = queries::repeat_cache::delete_cache(&conn).await;
+    }
     queries::history::save_history_entry(
         &conn,
         HistoryEntryRequest {
@@ -138,7 +156,7 @@ pub fn next_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
     }
 
     // Otherwise grab another image
-    let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
+    let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache, &st.settings);
 
     st.current_image_idx += 1;
     st.greatest_idx += 1;
@@ -175,7 +193,7 @@ pub fn skip_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
     if st.current_image_idx == st.greatest_idx {
         // replace last image with a new path, idx stays the same
         st.path_history.pop();
-        let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache);
+        let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache, &st.settings);
 
         return (new_image_path, st.current_image_idx);
     }

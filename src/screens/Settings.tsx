@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./Settings.css";
 
 type RepeatBehavior = "no-repeat-for-n-images" | "no-repeat-for-session" | "allow-repeats-always";
 
@@ -6,18 +7,19 @@ export type AppSettings = {
   soundAt15: boolean;
   soundAt60: boolean;
   soundAtHalf: boolean;
+  soundOnNextImage: boolean;
   noRepeatBehavior: RepeatBehavior;
   noRepeatSize: number; // parse to number when sending to backend?
   reviewAfterSession: boolean;
 }
 
-export function Settings({ saveSettings, currentSettings }:
-  { saveSettings: (appSettings: AppSettings) => void, currentSettings: AppSettings }) {
+export function Settings({ saveSettings, exitSettings, currentSettings }:
+  { saveSettings: (appSettings: AppSettings) => void, exitSettings: () => void, currentSettings: AppSettings }) {
   const [settings, setDraftSettings] = useState(currentSettings);
   const [noRepeatSize, setNoRepeatSize] = useState(currentSettings.noRepeatSize.toString());
 
   return (
-    <main className="review-container">
+    <main className="settings-container">
       <label>
         <input type="checkbox"
           checked={settings.soundAt15}
@@ -38,6 +40,12 @@ export function Settings({ saveSettings, currentSettings }:
       </label>
       <label>
         <input type="checkbox"
+          checked={settings.soundOnNextImage}
+          onChange={(e) => setDraftSettings({ ...settings, soundOnNextImage: e.target.checked })} />
+        Play Sound on Next Image
+      </label>
+      <label>
+        <input type="checkbox"
           checked={settings.reviewAfterSession}
           onChange={(e) => setDraftSettings({ ...settings, reviewAfterSession: e.target.checked })} />
         Review After Each Session
@@ -51,10 +59,13 @@ export function Settings({ saveSettings, currentSettings }:
         <input type="text" value={noRepeatSize} onChange={(e) => setNoRepeatSize(e.target.value)}
         /> : <></>
       }
-      <button onClick={() => {
-        const n = parseInt(noRepeatSize);
-        saveSettings({ ...settings, noRepeatSize: isNaN(n) ? 1 : Math.max(1, n) });
-      }}>Save Settings</button>
+      <div>
+        <button onClick={() => {
+          const n = parseInt(noRepeatSize);
+          saveSettings({ ...settings, noRepeatSize: isNaN(n) ? 1 : Math.max(1, n) });
+        }}>Save Settings</button>
+        <button onClick={exitSettings}>Exit Settings</button>
+      </div>
     </main >
   );
 }
