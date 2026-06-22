@@ -21,8 +21,6 @@ fn get_new_image(
     let mut rng = rand::rng();
     let new_image_path: String;
 
-    println!("{:?}", app_settings);
-
     // only free images if no_repeat_behavior is n based
     if app_settings.no_repeat_behavior == "no-repeat-for-n-images"
         && repeat_cache.len() > app_settings.no_repeat_size as usize
