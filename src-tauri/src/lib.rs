@@ -5,6 +5,8 @@ use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::SqlitePool;
 use tauri::Manager;
 
+use crate::queries::settings::AppSettings;
+
 mod commands;
 mod queries;
 mod util;
@@ -16,6 +18,7 @@ struct AppData {
     path_history: Vec<String>,
     image_pool: Vec<String>,
     repeat_cache: VecDeque<String>,
+    settings: AppSettings,
 }
 
 pub fn run() {
@@ -63,6 +66,10 @@ pub fn run() {
                 path_history: vec![],
                 image_pool: vec![],
                 repeat_cache: VecDeque::new(),
+                settings: AppSettings {
+                    no_repeat_behavior: "no_repeat_for_n_images".to_string(),
+                    ..Default::default()
+                },
             }));
             Ok(())
         })
@@ -79,6 +86,9 @@ pub fn run() {
             commands::source::delete_sources,
             // history
             commands::history::get_history,
+            // settings
+            commands::settings::get_settings,
+            commands::settings::save_settings,
         ])
         .run(tauri::generate_context!())
         .expect("Tauri application should successfully start");

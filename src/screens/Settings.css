@@ -1,0 +1,4 @@
+.settings-container {
+  display: flex;
+  flex-direction: column;
+}
