@@ -67,7 +67,7 @@ pub fn run() {
                 image_pool: vec![],
                 repeat_cache: VecDeque::new(),
                 settings: AppSettings {
-                    no_repeat_behavior: "no_repeat_for_n_images".to_string(),
+                    no_repeat_behavior: "no-repeat-for-n-images".to_string(),
                     ..Default::default()
                 },
             }));
