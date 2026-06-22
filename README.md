@@ -1,3 +1,3 @@
-# Go Figure
+# Go Figure!
 
-App for practicing figure drawing
+App for practicing timed figure drawing

@@ -53,7 +53,7 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
       ))}
       Number of images: <input className="image-number-input" value={count} onInput={(e) => setCount(e.currentTarget.value)} />
       Display time: <input className="image-display-time" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
-      <button onClick={() => startSession(parseInt(count), parseInt(time), imageDirs!)}>Start Session</button>
+      <button onClick={() => startSession(parseInt(count), parseInt(time), imageDirs!)}>Go Figure!</button>
     </main>
   );
 }
