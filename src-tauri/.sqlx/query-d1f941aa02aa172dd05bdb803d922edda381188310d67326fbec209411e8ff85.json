@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO settings (\n            sound_at_15, \n            sound_at_60, \n            sound_at_half, \n            sound_on_next_image,\n            no_repeat_behavior, \n            no_repeat_size,\n            review_after_session\n            )\n        VALUES (?, ?, ?, ?, ?, ?, ?)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "d1f941aa02aa172dd05bdb803d922edda381188310d67326fbec209411e8ff85"
+}
