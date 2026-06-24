@@ -1485,7 +1485,7 @@ dependencies = [
 
 [[package]]
 name = "gofigure"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "rand 0.10.1",

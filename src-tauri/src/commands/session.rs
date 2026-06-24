@@ -194,6 +194,7 @@ pub fn skip_image(state: State<'_, Mutex<AppData>>) -> (String, usize) {
         // replace last image with a new path, idx stays the same
         st.path_history.pop();
         let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache, &st.settings);
+        st.path_history.push(new_image_path.clone());
 
         return (new_image_path, st.current_image_idx);
     }
