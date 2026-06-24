@@ -29,7 +29,7 @@ pub async fn save_history_entry(
 ) -> anyhow::Result<i64> {
     let time_now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("System time should be accessible")
         .as_millis() as i64;
     let seconds_per_image = entry.seconds_per_image as i64;
     let images = entry.images.join("|");
