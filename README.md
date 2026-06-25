@@ -1,7 +1,7 @@
+<p align="center">
+  <img src="./src-tauri/icons/icon.png" alt="Go Figure Logo">
+</p>
 # Go Figure!
 
 App for practicing timed figure drawing
 
-<p align="center">
-  <img src="./src-tauri/icons/128x128.png" alt="Go Figure Logo">
-</p>
