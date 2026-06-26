@@ -1,6 +1,6 @@
 use sqlx::{Pool, QueryBuilder, Sqlite};
 
-pub async fn populate_repeat_cache(conn: &Pool<Sqlite>, dirs: Vec<String>) -> anyhow::Result<()> {
+pub async fn populate_repeat_cache(conn: &Pool<Sqlite>, paths: Vec<String>) -> anyhow::Result<()> {
     sqlx::query!(
         r"
         DELETE FROM repeat_cache
@@ -9,12 +9,12 @@ pub async fn populate_repeat_cache(conn: &Pool<Sqlite>, dirs: Vec<String>) -> an
     .execute(conn)
     .await?;
 
-    if dirs.is_empty() {
+    if paths.is_empty() {
         return Ok(());
     }
 
     let mut qb = QueryBuilder::new("INSERT INTO repeat_cache (path, sort) ");
-    qb.push_values(dirs.iter().enumerate(), |mut b, (idx, dir)| {
+    qb.push_values(paths.iter().enumerate(), |mut b, (idx, dir)| {
         b.push_bind(dir);
         b.push_bind(idx as i64);
     });

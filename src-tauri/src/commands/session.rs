@@ -26,23 +26,31 @@ fn get_new_image(
         && repeat_cache.len() > app_settings.no_repeat_size as usize
     {
         let freed_image_path = repeat_cache
-            .pop_front()
+            .pop_back()
             .expect("Repeat Cache should contain path to pop");
         image_pool.push(freed_image_path);
     }
 
     match app_settings.no_repeat_behavior.as_str() {
         "allow-repeats-always" => {
-            new_image_path = image_pool.choose(&mut rng).expect("Image pool should contain images").to_owned();
+            new_image_path = image_pool
+                .choose(&mut rng)
+                .expect("Image pool should contain images")
+                .to_owned();
         }
         "no-repeat-for-session" | "no-repeat-for-n-images" => {
             if !image_pool.is_empty() {
-                new_image_path = image_pool.choose(&mut rng).expect("Image pool should contain images").to_owned();
-                repeat_cache.push_back(new_image_path.clone());
+                new_image_path = image_pool
+                    .choose(&mut rng)
+                    .expect("Image pool should contain images")
+                    .to_owned();
+                repeat_cache.push_front(new_image_path.clone());
                 image_pool.retain(|v| *v != new_image_path);
             } else if !repeat_cache.is_empty() {
-                new_image_path = repeat_cache.pop_front().expect("Repeat cache should be poppable");
-                repeat_cache.push_back(new_image_path.clone());
+                new_image_path = repeat_cache
+                    .pop_back()
+                    .expect("Repeat cache should be poppable");
+                repeat_cache.push_front(new_image_path.clone());
             } else {
                 panic!(
             "No images to serve from repeat_cache or image_pool, presumably no sources provided"

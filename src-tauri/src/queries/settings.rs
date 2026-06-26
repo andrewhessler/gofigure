@@ -8,7 +8,11 @@ pub struct AppSettings {
     pub sound_at_60: bool,
     pub sound_at_half: bool,
     pub sound_on_next_image: bool,
+
+    // no-repeat-for-n-images, no-repeat-for-session, allow-repeats-always
+    // change this to an enum or something some day
     pub no_repeat_behavior: String,
+
     #[sqlx(try_from = "i64")]
     pub no_repeat_size: u64,
     pub review_after_session: bool,
