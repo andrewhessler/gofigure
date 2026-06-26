@@ -15,11 +15,36 @@ pub async fn save_settings(
     pool: State<'_, Pool<Sqlite>>,
     settings: AppSettings,
 ) -> Result<(), CmdError> {
+    let prev_repeat_behavior = {
+        let st = &mut *state
+            .lock()
+            .expect("State should be accessible for syncing settings");
+        st.settings.no_repeat_behavior.clone()
+    };
     queries::settings::populate_settings(&pool, settings.clone()).await?;
-    let st = &mut *state
-        .lock()
-        .expect("State should be accessible for syncing settings");
-    st.settings = settings;
+
+    let repeat_cache = {
+        let st = &mut *state
+            .lock()
+            .expect("State should be accessible for syncing settings");
+        st.settings = settings;
+
+        if prev_repeat_behavior == st.settings.no_repeat_behavior {
+            return Ok(());
+        } else if st.settings.no_repeat_behavior == "no-repeat-for-n-images" {
+            st.repeat_cache
+                .truncate(st.settings.no_repeat_size as usize); // allowed by push_front, pop_back
+        } else if st.settings.no_repeat_behavior == "no-repeat-for-session"
+            || st.settings.no_repeat_behavior == "allow-repeats-always"
+        {
+            st.repeat_cache.clear();
+        }
+
+        st.repeat_cache.clone()
+    };
+
+    queries::repeat_cache::populate_repeat_cache(&pool, Vec::from(repeat_cache)).await?;
+
     Ok(())
 }
 

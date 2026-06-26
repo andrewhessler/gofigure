@@ -1,0 +1,32 @@
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.num-images-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.num-images-radio {
+  display: flex;
+  column-gap: 20px;
+}
+
+.display-time-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.display-time-radio {
+  display: flex;
+  column-gap: 10px;
+}
+
+.go-button {
+  margin-top: 20px;
+}

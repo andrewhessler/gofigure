@@ -1,5 +1,26 @@
+.history-list {
+  display: grid;
+  grid-template-columns: 1fr 0.5fr 0.5fr 1fr;
+  margin-top: 10px;
+}
+
 .history-entry {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
+  display: contents
+}
+
+.history-min-secs {
+  text-align: center;
+}
+
+.history-date {
+  text-align: left;
+}
+
+.history-image-count {
+  text-align: right;
+}
+
+.history-go {
+  width: 20vw;
+  justify-self: end;
 }
