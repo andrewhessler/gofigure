@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import "./Session.css";
 import { AppSettings } from "./Settings";
+import { formatTime } from "../util/time";
 
 export interface SessionProps {
   sessionConfig: {
@@ -11,20 +12,6 @@ export interface SessionProps {
   },
   endSession: (secondsPerImage: number) => void;
   appSettings: AppSettings;
-}
-
-function formatTime(totalSeconds: number | null) {
-  if (!totalSeconds) {
-    return '00:00';
-  }
-
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  const paddedMinutes = String(minutes).padStart(2, '0');
-  const paddedSeconds = String(seconds).padStart(2, '0');
-
-  return `${paddedMinutes}:${paddedSeconds}`;
 }
 
 export function Session({ sessionConfig, endSession, appSettings }: SessionProps) {

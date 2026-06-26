@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import './History.css';
+import { formatTime } from "../util/time";
 
 type HistoryReturn = {
   id: number;
@@ -39,14 +40,16 @@ export function History({ closeHistory, openReview }: { closeHistory: () => void
   return (
     <main className="container">
       <button onClick={closeHistory}>Close History</button>
-      {historyEntries?.map((entry) => (
-        <div className="history-entry">
-          <div>{entry.completedDatetime.toLocaleDateString()}</div>
-          <div>{entry.secondsPerImage}</div>
-          <div>{entry.images.length} images</div>
-          <button onClick={() => openReview(historyEntries.find((v) => v.id === entry.id)!.images)}>&gt;</button>
-        </div>
-      ))}
+      <div className="history-list">
+        {historyEntries?.map((entry) => (
+          <div className="history-entry">
+            <div className="history-date">{entry.completedDatetime.toLocaleString()}</div>
+            <div className="history-min-secs">{formatTime(entry.secondsPerImage)}</div>
+            <div className="history-image-count">{entry.images.length} images</div>
+            <button onClick={() => openReview(historyEntries.find((v) => v.id === entry.id)!.images)} className="history-go">&gt;</button>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
