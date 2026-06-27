@@ -118,3 +118,7 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+.flip-vert {
+  transform: scaleY(-1);
+}
