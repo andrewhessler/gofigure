@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { Home, History, Session, Review } from './screens';
 import { invoke } from "@tauri-apps/api/core";
 import { AppSettings, Settings } from "./screens/Settings";
+import { Home } from "./screens/Home";
+import { Review } from "./screens/Review";
+import { Session } from "./screens/Session";
+import { History } from "./screens/History";
 
 type Screen =
   | { name: "home" }
