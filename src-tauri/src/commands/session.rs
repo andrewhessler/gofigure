@@ -1,4 +1,7 @@
-use std::{collections::VecDeque, sync::Mutex};
+use std::{
+    collections::{HashSet, VecDeque},
+    sync::Mutex,
+};
 
 use rand::seq::IndexedRandom;
 use sqlx::{Pool, Sqlite};
@@ -10,6 +13,12 @@ use crate::{
     util::CmdError,
     AppData,
 };
+
+// https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types
+const ALLOWED_IMAGE_EXTENSIONS: &[&str] = &[
+    "apng", "png", "avif", "gif", "jpg", "jpeg", "jfif", "pjpeg", "pjp", "svg", "webp", "bmp",
+    "ico", "cur", "tif", "tiff",
+];
 
 fn get_new_image(
     image_pool: &mut Vec<String>,
@@ -91,12 +100,25 @@ pub async fn start_session(
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file())
-                .map(|e| e.path().to_string_lossy().to_string())
-                .collect::<Vec<String>>(),
+                .filter(|e| {
+                    e.path()
+                        .extension()
+                        .and_then(|ext| ext.to_str())
+                        .is_some_and(|ext| {
+                            ALLOWED_IMAGE_EXTENSIONS
+                                .iter()
+                                .any(|allowed| allowed.eq_ignore_ascii_case(ext))
+                        })
+                })
+                .map(|e| e.path().to_string_lossy().to_string()),
         );
     }
 
-    st.image_pool.retain(|dir| !st.repeat_cache.contains(dir)); // :grimace:
+    st.image_pool.sort();
+    st.image_pool.dedup();
+
+    let cache: HashSet<&String> = st.repeat_cache.iter().collect();
+    st.image_pool.retain(|dir| !cache.contains(dir));
 
     let new_image_path = get_new_image(&mut st.image_pool, &mut st.repeat_cache, &st.settings);
 

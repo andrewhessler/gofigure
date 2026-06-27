@@ -187,10 +187,10 @@ export function Session({ sessionConfig, endSession, appSettings }: SessionProps
             </>
             : <></>}
         </div>
-        <div>
+        <div className="right-side">
           <span className={"timer" + (timerColorOn ? " timer-color" : "")}>{formatTime(counter)}</span>
         </div>
-        <div>
+        <div className="right-side">
           <button onClick={() => endSession(sessionConfig.time)}>Exit</button>
         </div>
       </div>
