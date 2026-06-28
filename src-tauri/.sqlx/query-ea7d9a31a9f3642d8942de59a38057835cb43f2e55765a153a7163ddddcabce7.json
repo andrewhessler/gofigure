@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO saved_config (seconds_per_image, image_count)\n        SELECT ?, ?\n        WHERE NOT EXISTS (\n            SELECT 1 FROM saved_config WHERE seconds_per_image = ? AND image_count = ?\n        )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "ea7d9a31a9f3642d8942de59a38057835cb43f2e55765a153a7163ddddcabce7"
+}
