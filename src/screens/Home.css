@@ -32,7 +32,11 @@ button:disabled {
 }
 
 .saved-config-list {
+  display: flex;
   margin-top: 20px;
+  column-gap: 20px;
+  row-gap: 20px;
+  flex-wrap: wrap;
 }
 
 .save-config-button {
