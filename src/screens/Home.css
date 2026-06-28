@@ -37,6 +37,7 @@ button:disabled {
   column-gap: 20px;
   row-gap: 20px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .save-config-button {
