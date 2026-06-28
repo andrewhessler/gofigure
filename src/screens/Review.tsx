@@ -54,10 +54,10 @@ export function Review({ closeReview, images }: { closeReview: () => void, image
             </>
             : <></>}
         </div>
-        <div>
+        <div className="right-side">
           <button onClick={() => { setFlipped(!flipped) }}>Flip</button>
         </div>
-        <div>
+        <div className="right-side">
           <button onClick={() => closeReview()}>Exit</button>
         </div>
       </div>
