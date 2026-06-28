@@ -10,10 +10,23 @@ interface HomeProps {
   viewSettings: () => void;
 }
 
+interface ConfigReturn {
+  id: number;
+  seconds_per_image: number;
+  image_count: number;
+}
+
+interface Config {
+  id: number;
+  secondsPerImage: number;
+  imageCount: number;
+}
+
 export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
   const [imageDirs, setImageDirs] = useState<string[] | null>(null);
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
+  const [configs, setConfigs] = useState<Config[] | null>(null);
 
   async function getSources() {
     const dirs = await invoke("get_sources") as string[];
@@ -38,8 +51,28 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
     }
   }
 
+  async function getConfigs() {
+    let configs = await invoke("get_configs") as ConfigReturn[];
+    setConfigs(configs.map((config) => ({
+      id: config.id,
+      secondsPerImage: config.seconds_per_image,
+      imageCount: config.image_count,
+    })));
+  }
+
+  async function saveConfig() {
+    await invoke("save_config", { secondsPerImage: parseInt(time), imageCount: parseInt(count) });
+    await getConfigs();
+  }
+
+  async function deleteConfig(id: number) {
+    await invoke("delete_config", { id });
+    await getConfigs();
+  }
+
   useEffect(() => {
     getSources();
+    getConfigs();
   }, [])
 
   return (
@@ -75,7 +108,15 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
           })}
         </div>
       </div>
+      <button className="save-config-button" onClick={() => saveConfig()}>Save Config</button>
       <button className="go-button" onClick={() => startSession(parseInt(count), parseInt(time), imageDirs!)} disabled={!imageDirs?.length}>Go Figure!</button>
+      <div className="saved-config-list">
+        {configs?.map((config) => {
+          return <div><button onClick={() => startSession(config.imageCount, config.secondsPerImage, imageDirs!)} disabled={!imageDirs?.length}>
+            {config.imageCount} - {formatTime(config.secondsPerImage)}
+          </button><button onClick={() => deleteConfig(config.id)}>Delete</button></div>
+        })}
+      </div>
     </main >
   );
 }

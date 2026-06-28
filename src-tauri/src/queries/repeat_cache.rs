@@ -1,5 +1,17 @@
 use sqlx::{Pool, QueryBuilder, Sqlite};
 
+pub async fn get_repeat_cache(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<String>> {
+    let cache = sqlx::query_scalar!(
+        r"
+        SELECT path FROM repeat_cache ORDER BY sort ASC
+        "
+    )
+    .fetch_all(conn)
+    .await?;
+
+    Ok(cache)
+}
+
 pub async fn populate_repeat_cache(conn: &Pool<Sqlite>, paths: Vec<String>) -> anyhow::Result<()> {
     sqlx::query!(
         r"
@@ -22,18 +34,6 @@ pub async fn populate_repeat_cache(conn: &Pool<Sqlite>, paths: Vec<String>) -> a
     qb.build().execute(conn).await?;
 
     Ok(())
-}
-
-pub async fn get_repeat_cache(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<String>> {
-    let cache = sqlx::query_scalar!(
-        r"
-        SELECT path FROM repeat_cache ORDER BY sort ASC
-        "
-    )
-    .fetch_all(conn)
-    .await?;
-
-    Ok(cache)
 }
 
 pub async fn delete_cache(conn: &Pool<Sqlite>) -> anyhow::Result<()> {

@@ -30,3 +30,11 @@ button:disabled {
 .go-button {
   margin-top: 20px;
 }
+
+.saved-config-list {
+  margin-top: 20px;
+}
+
+.save-config-button {
+  margin-top: 20px;
+}
