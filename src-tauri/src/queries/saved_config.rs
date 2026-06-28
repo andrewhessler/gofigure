@@ -47,10 +47,15 @@ pub async fn save_config(conn: &Pool<Sqlite>, req: ConfigRequest) -> anyhow::Res
     sqlx::query!(
         r"
         INSERT INTO saved_config (seconds_per_image, image_count)
-        VALUES (?, ?)
+        SELECT ?, ?
+        WHERE NOT EXISTS (
+            SELECT 1 FROM saved_config WHERE seconds_per_image = ? AND image_count = ?
+        )
         ",
         seconds_per_image,
-        image_count
+        image_count,
+        seconds_per_image,
+        image_count,
     )
     .execute(conn)
     .await?;
