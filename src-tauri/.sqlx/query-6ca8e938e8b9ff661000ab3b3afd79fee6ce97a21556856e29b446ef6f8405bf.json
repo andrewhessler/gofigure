@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT * FROM saved_config ORDER BY id DESC LIMIT 100\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "seconds_per_image",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "image_count",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "6ca8e938e8b9ff661000ab3b3afd79fee6ce97a21556856e29b446ef6f8405bf"
+}
