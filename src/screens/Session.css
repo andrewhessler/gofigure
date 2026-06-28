@@ -11,7 +11,7 @@
   display: grid;
   width: 100vw;
   align-items: center;
-  grid-template-columns: 1fr 5fr 0.5fr 0.5fr;
+  grid-template-columns: 2fr 4fr 1fr 1fr;
 }
 
 .image-control {
@@ -22,6 +22,7 @@
 
 .image-view {
   display: flex;
+  height: 100%;
   width: 100%;
   justify-content: center;
   grid-row-start: 1;
@@ -30,6 +31,7 @@
 
 img {
   height: 100vh;
+  z-index: -100;
   width: auto;
   object-fit: contain;
 }
@@ -41,4 +43,12 @@ img {
 
 .timer-color {
   color: #d19a66;
+}
+
+.flip-vert {
+  transform: scale(-1, -1);
+}
+
+.right-side {
+  justify-self: center;
 }

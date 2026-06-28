@@ -18,6 +18,18 @@ pub struct AppSettings {
     pub review_after_session: bool,
 }
 
+pub async fn get_settings(conn: &Pool<Sqlite>) -> anyhow::Result<AppSettings> {
+    let settings = sqlx::query_as(
+        r"
+        SELECT * FROM settings
+        ",
+    )
+    .fetch_one(conn)
+    .await?;
+
+    Ok(settings)
+}
+
 pub async fn populate_settings(conn: &Pool<Sqlite>, settings: AppSettings) -> anyhow::Result<()> {
     sqlx::query!(
         r"
@@ -54,16 +66,4 @@ pub async fn populate_settings(conn: &Pool<Sqlite>, settings: AppSettings) -> an
     .await?;
 
     Ok(())
-}
-
-pub async fn get_settings(conn: &Pool<Sqlite>) -> anyhow::Result<AppSettings> {
-    let settings = sqlx::query_as(
-        r"
-        SELECT * FROM settings
-        ",
-    )
-    .fetch_one(conn)
-    .await?;
-
-    Ok(settings)
 }

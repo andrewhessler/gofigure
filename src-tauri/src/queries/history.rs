@@ -23,32 +23,6 @@ pub struct HistoryEntry {
     pub images: Vec<String>,
 }
 
-pub async fn save_history_entry(
-    conn: &Pool<Sqlite>,
-    entry: HistoryEntryRequest,
-) -> anyhow::Result<i64> {
-    let time_now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("System time should be accessible")
-        .as_millis() as i64;
-    let seconds_per_image = entry.seconds_per_image as i64;
-    let images = entry.images.join("|");
-
-    let result = sqlx::query!(
-        r"
-        INSERT INTO session_history (completed_timestamp, seconds_per_image, images)
-        VALUES (?, ?, ?)
-        ",
-        time_now,
-        seconds_per_image,
-        images,
-    )
-    .execute(conn)
-    .await?;
-
-    Ok(result.last_insert_rowid())
-}
-
 pub async fn get_history(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<HistoryEntry>> {
     let entries = sqlx::query_as!(
         HistoryReturn,
@@ -74,4 +48,30 @@ pub async fn get_history(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<HistoryEntry
         .collect();
 
     Ok(entries)
+}
+
+pub async fn save_history_entry(
+    conn: &Pool<Sqlite>,
+    entry: HistoryEntryRequest,
+) -> anyhow::Result<i64> {
+    let time_now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("System time should be accessible")
+        .as_millis() as i64;
+    let seconds_per_image = entry.seconds_per_image as i64;
+    let images = entry.images.join("|");
+
+    let result = sqlx::query!(
+        r"
+        INSERT INTO session_history (completed_timestamp, seconds_per_image, images)
+        VALUES (?, ?, ?)
+        ",
+        time_now,
+        seconds_per_image,
+        images,
+    )
+    .execute(conn)
+    .await?;
+
+    Ok(result.last_insert_rowid())
 }

@@ -89,6 +89,10 @@ pub fn run() {
             // settings
             commands::settings::get_settings,
             commands::settings::save_settings,
+            // saved configs
+            commands::saved_config::get_configs,
+            commands::saved_config::save_config,
+            commands::saved_config::delete_config,
         ])
         .run(tauri::generate_context!())
         .expect("Tauri application should successfully start");
