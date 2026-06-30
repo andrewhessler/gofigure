@@ -1,9 +1,17 @@
+use serde::Serialize;
 use sqlx::{Pool, QueryBuilder, Sqlite};
 
-pub async fn get_sources(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<String>> {
-    let dirs = sqlx::query_scalar(
+#[derive(Serialize)]
+pub struct Source {
+    pub path: String,
+    pub active: bool,
+}
+
+pub async fn get_sources(conn: &Pool<Sqlite>) -> anyhow::Result<Vec<Source>> {
+    let dirs = sqlx::query_as!(
+        Source,
         r"
-        SELECT path FROM image_sources
+        SELECT path, active FROM image_sources
         ",
     )
     .fetch_all(conn)
@@ -23,6 +31,20 @@ pub async fn add_sources(conn: &Pool<Sqlite>, dirs: &Vec<&str>) -> anyhow::Resul
     });
 
     qb.build().execute(conn).await?;
+
+    Ok(())
+}
+
+pub async fn set_active(conn: &Pool<Sqlite>, dir: &str, active: bool) -> anyhow::Result<()> {
+    sqlx::query!(
+        r"
+        UPDATE image_sources SET active = ? WHERE path = ?
+        ",
+        active,
+        dir
+    )
+    .execute(conn)
+    .await?;
 
     Ok(())
 }

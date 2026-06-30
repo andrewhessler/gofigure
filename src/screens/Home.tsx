@@ -22,15 +22,20 @@ interface Config {
   imageCount: number;
 }
 
+interface Source {
+  path: string;
+  active: boolean;
+}
+
 export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
-  const [imageDirs, setImageDirs] = useState<string[] | null>(null);
+  const [sources, setSources] = useState<Source[] | null>(null);
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
   const [configs, setConfigs] = useState<Config[] | null>(null);
 
   async function getSources() {
-    const dirs = await invoke("get_sources") as string[];
-    setImageDirs(dirs);
+    const dirs = await invoke("get_sources") as Source[];
+    setSources(dirs);
   }
 
   async function addSources() {
@@ -38,17 +43,26 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
       multiple: true,
       directory: true,
     });
-    const newDirs = await invoke("add_sources", { dirs: stagedDirs }) as string[];
+    const newDirs = await invoke("add_sources", { dirs: stagedDirs }) as Source[];
     if (newDirs) {
-      setImageDirs((dirs) => dirs ? dirs.concat(newDirs) : newDirs);
+      setSources((dirs) => dirs ? dirs.concat(newDirs) : newDirs);
     }
   }
 
   async function deleteSources(dirs: string[]) {
     const deletedDirs = await invoke("delete_sources", { dirs }) as string[];
     if (deletedDirs) {
-      setImageDirs((dirs) => dirs!.filter((dir) => !deletedDirs.includes(dir)));
+      setSources((dirs) => dirs!.filter((dir) => !deletedDirs.includes(dir.path)));
     }
+  }
+
+  async function toggleSource(dir: Source) {
+    if (dir.active) {
+      await invoke("disable_source", { path: dir.path });
+    } else {
+      await invoke("enable_source", { path: dir.path });
+    }
+    setSources((sources) => sources!.map((source) => source.path !== dir.path ? source : { ...source, active: !source.active }));
   }
 
   async function getConfigs() {
@@ -81,9 +95,11 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
       <button onClick={viewHistory}>View History</button>
       <button onClick={viewSettings}>View Settings</button>
       <button onClick={addSources}>Add Sources</button>
-      {imageDirs?.map((dir) => (
-        <div onClick={() => deleteSources([dir])}>
-          {dir}
+      {sources?.map((source) => (
+        <div>
+          <button onClick={() => toggleSource(source)}>{source.active ? "on" : "off"}</button>
+          <span>{source.path}</span>
+          <button onClick={() => deleteSources([source.path])}>X</button>
         </div>
       ))}
       <div className="num-images-selection">
@@ -109,12 +125,20 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
         </div>
       </div>
       <button className="save-config-button" onClick={() => saveConfig()}>Save Config</button>
-      <button className="go-button" onClick={() => startSession(parseInt(count), parseInt(time), imageDirs!)} disabled={!imageDirs?.length}>Go Figure!</button>
+      <button className="go-button"
+        onClick={() => startSession(parseInt(count), parseInt(time), sources!.filter((source) => source.active).map((source) => source.path))}
+        disabled={!sources?.filter((source) => source.active).length}>
+        Go Figure!
+      </button>
       <div className="saved-config-list">
         {configs?.map((config) => {
-          return <div><button onClick={() => startSession(config.imageCount, config.secondsPerImage, imageDirs!)} disabled={!imageDirs?.length}>
-            {config.imageCount} - {formatTime(config.secondsPerImage)}
-          </button><button onClick={() => deleteConfig(config.id)}>Delete</button></div>
+          return <div>
+            <button
+              onClick={() => startSession(config.imageCount, config.secondsPerImage, sources!.filter((source) => source.active).map((source) => source.path))}
+              disabled={!sources?.filter((source) => source.active).length}>
+              {config.imageCount} - {formatTime(config.secondsPerImage)}
+            </button>
+            <button onClick={() => deleteConfig(config.id)}>Delete</button></div>
         })}
       </div>
     </main >

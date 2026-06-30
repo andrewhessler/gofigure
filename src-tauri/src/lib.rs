@@ -83,6 +83,8 @@ pub fn run() {
             // sources
             commands::source::get_sources,
             commands::source::add_sources,
+            commands::source::enable_source,
+            commands::source::disable_source,
             commands::source::delete_sources,
             // history
             commands::history::get_history,
