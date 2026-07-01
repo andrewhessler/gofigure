@@ -125,7 +125,7 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
         {sources?.length ? sources.map((source) => (
           <div className="source-entry">
             <button onClick={() => toggleSource(source)} className={"source-entry-main-button color-2" + (source.active ? "" : " disabled")}>{basename(source.path)}</button>
-            <button onClick={() => deleteSources([source.path])}>X</button>
+            <button className="x-button" onClick={() => deleteSources([source.path])}>x</button>
           </div>
         )) : <button onClick={addSources}>Add Sources</button>}
       </div>
@@ -162,17 +162,18 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
         </button>
         <div className="saved-config-list">
           {configs?.map((config) => {
-            return <div>
+            return <div className="full-config-button">
               <button
                 className="color-1"
                 onClick={() => startSession(config.imageCount, config.secondsPerImage, sources!.filter((source) => source.active).map((source) => source.path))}
                 disabled={!sources?.filter((source) => source.active).length}>
                 {config.imageCount} - {formatTime(config.secondsPerImage)}
               </button>
-              <button onClick={() => deleteConfig(config.id)}>Delete</button></div>
+              <button className="config-x-button" onClick={(e) => { e.stopPropagation(); deleteConfig(config.id); }}>x</button>
+            </div>
           })}
         </div>
       </div>
-    </main>
+    </main >
   );
 }
