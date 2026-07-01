@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import './Home.css';
 import { formatTime } from "../util/time";
 
+
 interface HomeProps {
   startSession: (imageCount: number, displayTime: number, imageDirs: string[]) => void;
   viewHistory: () => void;
@@ -25,6 +26,10 @@ interface Config {
 interface Source {
   path: string;
   active: boolean;
+}
+
+function basename(path: string) {
+  return path.replace(/^.*[\\\/]/, '');
 }
 
 export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
@@ -65,6 +70,20 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
     setSources((sources) => sources!.map((source) => source.path !== dir.path ? source : { ...source, active: !source.active }));
   }
 
+  async function disableAll() {
+    for (const source of (sources ?? [])) {
+      await invoke("disable_source", { path: source.path });
+    }
+    setSources((sources) => sources!.map((source) => ({ ...source, active: false })));
+  }
+
+  async function enableAll() {
+    for (const source of (sources ?? [])) {
+      await invoke("enable_source", { path: source.path });
+    }
+    setSources((sources) => sources!.map((source) => ({ ...source, active: true })));
+  }
+
   async function getConfigs() {
     let configs = await invoke("get_configs") as ConfigReturn[];
     setConfigs(configs.map((config) => ({
@@ -91,19 +110,27 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
 
   return (
     <main className="container">
-      <h1>Welcome to the Home Screen</h1>
-      <button onClick={viewHistory}>View History</button>
-      <button onClick={viewSettings}>View Settings</button>
-      <button onClick={addSources}>Add Sources</button>
-      {sources?.map((source) => (
-        <div>
-          <button onClick={() => toggleSource(source)}>{source.active ? "on" : "off"}</button>
-          <span>{source.path}</span>
-          <button onClick={() => deleteSources([source.path])}>X</button>
-        </div>
-      ))}
+      <div className="header">
+        <button onClick={viewHistory}>📝</button>
+        <h1>Ready... Set...</h1>
+        <button onClick={viewSettings}>🛠️</button>
+      </div>
+      <div className="source-control-area">
+        <button className="delete-all-sources-button" onClick={() => deleteSources(sources?.map((source) => source.path) ?? [])}>Delete All</button>
+        <button className="enable-all-sources-button" onClick={enableAll}>Enable All</button>
+        <button className="disable-all-sources-button" onClick={disableAll}>Disable All</button>
+        <button className="add-source-button" onClick={addSources}>➕</button>
+      </div>
+      <div className="source-view">
+        {sources?.length ? sources.map((source) => (
+          <div className="source-entry">
+            <button onClick={() => toggleSource(source)} className={"source-entry-main-button" + (source.active ? "" : " disabled")}>{basename(source.path)}</button>
+            <button onClick={() => deleteSources([source.path])}>X</button>
+          </div>
+        )) : <button onClick={addSources}>Add Sources</button>}
+      </div>
       <div className="num-images-selection">
-        Number of images: <input className="image-number-input" value={count} onInput={(e) => setCount(e.currentTarget.value)} />
+        Number of images:
         <div className="num-images-radio">
           {[1, 2, 3, 4, 5, 10, 15, 20].map((val) => {
             return (<div>
@@ -112,9 +139,10 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
             </div>)
           })}
         </div>
+        <input className="image-number-input" value={count} onInput={(e) => setCount(e.currentTarget.value)} />
       </div>
       <div className="display-time-selection">
-        Display time: <input className="image-display-time" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
+        Display time:
         <div className="display-time-radio">
           {[60, 120, 180, 300, 600, 900, 1800].map((val) => {
             return (<div>
@@ -123,24 +151,27 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
             </div>)
           })}
         </div>
+        <input className="image-display-time" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
       </div>
       <button className="save-config-button" onClick={() => saveConfig()}>Save Config</button>
-      <button className="go-button"
-        onClick={() => startSession(parseInt(count), parseInt(time), sources!.filter((source) => source.active).map((source) => source.path))}
-        disabled={!sources?.filter((source) => source.active).length}>
-        Go Figure!
-      </button>
-      <div className="saved-config-list">
-        {configs?.map((config) => {
-          return <div>
-            <button
-              onClick={() => startSession(config.imageCount, config.secondsPerImage, sources!.filter((source) => source.active).map((source) => source.path))}
-              disabled={!sources?.filter((source) => source.active).length}>
-              {config.imageCount} - {formatTime(config.secondsPerImage)}
-            </button>
-            <button onClick={() => deleteConfig(config.id)}>Delete</button></div>
-        })}
+      <div className="submit-buttons">
+        <button className="go-button"
+          onClick={() => startSession(parseInt(count), parseInt(time), sources!.filter((source) => source.active).map((source) => source.path))}
+          disabled={!sources?.filter((source) => source.active).length}>
+          Go Figure!
+        </button>
+        <div className="saved-config-list">
+          {configs?.map((config) => {
+            return <div>
+              <button
+                onClick={() => startSession(config.imageCount, config.secondsPerImage, sources!.filter((source) => source.active).map((source) => source.path))}
+                disabled={!sources?.filter((source) => source.active).length}>
+                {config.imageCount} - {formatTime(config.secondsPerImage)}
+              </button>
+              <button onClick={() => deleteConfig(config.id)}>Delete</button></div>
+          })}
+        </div>
       </div>
-    </main >
+    </main>
   );
 }

@@ -44,7 +44,7 @@ pub fn run() {
             tauri::async_runtime::block_on(sqlx::migrate!("./migrations").run(&pool))
                 .expect("migrations should be able to run");
 
-            // Allow accessing images in source directories
+            // --- Allow accessing images in source directories
             let sources: Vec<String> = tauri::async_runtime::block_on(
                 sqlx::query_scalar("SELECT path FROM image_sources").fetch_all(&pool),
             )
