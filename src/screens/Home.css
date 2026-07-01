@@ -3,27 +3,75 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.num-images-selection {
+.header {
+  display: grid;
+  grid-template-columns: 0.5fr 10fr 0.5fr;
+  margin-bottom: 40px;
+  color: #522104;
+}
+
+.source-control-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 3fr 0.5fr;
+  grid-template-areas:
+    "left left left . . right";
+}
+
+.add-source-button {
+  grid-area: right;
+  font-weight: bold;
+}
+
+.delete-all-sources-button {
+  width: fit-content;
+}
+
+.enable-all-sources-button {
+  width: fit-content;
+}
+
+.disable-all-sources-button {
+  width: fit-content;
+}
+
+.submit-buttons {
+  position: absolute;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  bottom: 10px;
+}
+
+
+.num-images-selection {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  width: 100%;
+  column-gap: 10px;
   align-items: center;
+  justify-content: center;
   margin-top: 20px;
 }
 
 .num-images-radio {
   display: flex;
+  justify-content: center;
   column-gap: 20px;
 }
 
 .display-time-selection {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  column-gap: 10px;
   align-items: center;
+  justify-content: center;
   margin-top: 20px;
 }
 
 .display-time-radio {
   display: flex;
+  justify-content: center;
   column-gap: 10px;
 }
 
@@ -34,7 +82,7 @@ button:disabled {
 .saved-config-list {
   display: flex;
   margin-top: 20px;
-  column-gap: 20px;
+  column-gap: 40px;
   row-gap: 20px;
   flex-wrap: wrap;
   justify-content: center;
@@ -42,4 +90,46 @@ button:disabled {
 
 .save-config-button {
   margin-top: 20px;
+}
+
+.source-view {
+  max-height: 40vh;
+  margin-top: 10px;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  border-radius: 1mm;
+  border-style: solid;
+  border-left-style: none;
+  border-right-style: none;
+  padding-top: 10px;
+  padding-bottom: 20px;
+}
+
+.source-entry {
+  display: grid;
+  grid-template-columns: 0.2fr 5fr 0.2fr;
+  grid-template-areas: ". a b";
+  margin-top: 20px;
+}
+
+.source-entry-main-button {
+  grid-area: a;
+  width: 50%;
+  justify-self: center;
+}
+
+.x-button {
+  grid-area: b;
+  width: fit-content;
+  justify-self: right;
+  font-weight: bold;
+}
+
+.source-entry-main-button.disabled {
+  opacity: 0.5;
+}
+
+.config-x-button {
+  font-size: 10px;
+  margin-left: 5px;
 }

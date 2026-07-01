@@ -55,7 +55,7 @@ export function Review({ closeReview, images }: { closeReview: () => void, image
             : <></>}
         </div>
         <div className="right-side">
-          <button onClick={() => { setFlipped(!flipped) }}>Flip</button>
+          <button onClick={() => { setFlipped(!flipped) }}>Rotate 180</button>
         </div>
         <div className="right-side">
           <button onClick={() => closeReview()}>Exit</button>

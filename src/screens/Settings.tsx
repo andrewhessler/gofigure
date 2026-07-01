@@ -50,21 +50,24 @@ export function Settings({ saveSettings, exitSettings, currentSettings }:
           onChange={(e) => setDraftSettings({ ...settings, reviewAfterSession: e.target.checked })} />
         Review After Each Session
       </label>
-      <select value={settings.noRepeatBehavior} onChange={(e) => setDraftSettings({ ...settings, noRepeatBehavior: e.target.value as RepeatBehavior })}>
-        <option value="no-repeat-for-n-images">No Repeat for Num Images</option>
-        <option value="no-repeat-for-session">No Repeat for Single Session</option>
-        <option value="allow-repeats-always">Allow Repeats Always</option>
-      </select>
-      {settings.noRepeatBehavior === "no-repeat-for-n-images" ?
-        <input type="text" value={noRepeatSize} onChange={(e) => setNoRepeatSize(e.target.value)}
-        /> : <></>
-      }
-      <div>
-        <button onClick={() => {
+      <label className="no-repeat-container">
+        No Repeat Behavior:
+        <select className="no-repeat-select" value={settings.noRepeatBehavior} onChange={(e) => setDraftSettings({ ...settings, noRepeatBehavior: e.target.value as RepeatBehavior })}>
+          <option value="no-repeat-for-n-images">No Repeat for Num Images</option>
+          <option value="no-repeat-for-session">No Repeat for Single Session</option>
+          <option value="allow-repeats-always">Allow Repeats Always</option>
+        </select>
+        {settings.noRepeatBehavior === "no-repeat-for-n-images" ?
+          <input className="no-repeat-number" type="text" value={noRepeatSize} onChange={(e) => setNoRepeatSize(e.target.value)}
+          /> : <></>
+        }
+      </label>
+      <div className="bottom-buttons">
+        <button className="bottom-button" onClick={() => {
           const n = parseInt(noRepeatSize);
           saveSettings({ ...settings, noRepeatSize: isNaN(n) ? 1 : Math.max(1, n) });
         }}>Save Settings</button>
-        <button onClick={exitSettings}>Exit Settings</button>
+        <button className="bottom-button" onClick={exitSettings}>Exit Settings</button>
       </div>
     </main >
   );
