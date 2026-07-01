@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        UPDATE image_sources SET active = ? WHERE path = ?\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "37fd9473005e5622279681f9e190f8277bdf5c5a00a003d962373f89973d967a"
+}
