@@ -111,20 +111,20 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
   return (
     <main className="container">
       <div className="header">
-        <button onClick={viewHistory}>📝</button>
+        <button className="color-1" onClick={viewHistory}>📝</button>
         <h1>Ready... Set...</h1>
-        <button onClick={viewSettings}>🛠️</button>
+        <button className="color-1" onClick={viewSettings}>🛠️</button>
       </div>
       <div className="source-control-area">
         <button className="delete-all-sources-button" onClick={() => deleteSources(sources?.map((source) => source.path) ?? [])}>Delete All</button>
         <button className="enable-all-sources-button" onClick={enableAll}>Enable All</button>
         <button className="disable-all-sources-button" onClick={disableAll}>Disable All</button>
-        <button className="add-source-button" onClick={addSources}>➕</button>
+        <button className="add-source-button" onClick={addSources}>+</button>
       </div>
       <div className="source-view">
         {sources?.length ? sources.map((source) => (
           <div className="source-entry">
-            <button onClick={() => toggleSource(source)} className={"source-entry-main-button" + (source.active ? "" : " disabled")}>{basename(source.path)}</button>
+            <button onClick={() => toggleSource(source)} className={"source-entry-main-button color-2" + (source.active ? "" : " disabled")}>{basename(source.path)}</button>
             <button onClick={() => deleteSources([source.path])}>X</button>
           </div>
         )) : <button onClick={addSources}>Add Sources</button>}
@@ -139,7 +139,7 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
             </div>)
           })}
         </div>
-        <input className="image-number-input" value={count} onInput={(e) => setCount(e.currentTarget.value)} />
+        <input className="image-number-input color-2" value={count} onInput={(e) => setCount(e.currentTarget.value)} />
       </div>
       <div className="display-time-selection">
         Display time:
@@ -151,11 +151,11 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
             </div>)
           })}
         </div>
-        <input className="image-display-time" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
+        <input className="image-display-time color-2" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
       </div>
       <button className="save-config-button" onClick={() => saveConfig()}>Save Config</button>
       <div className="submit-buttons">
-        <button className="go-button"
+        <button className="go-button color-1"
           onClick={() => startSession(parseInt(count), parseInt(time), sources!.filter((source) => source.active).map((source) => source.path))}
           disabled={!sources?.filter((source) => source.active).length}>
           Go Figure!
@@ -164,6 +164,7 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
           {configs?.map((config) => {
             return <div>
               <button
+                className="color-1"
                 onClick={() => startSession(config.imageCount, config.secondsPerImage, sources!.filter((source) => source.active).map((source) => source.path))}
                 disabled={!sources?.filter((source) => source.active).length}>
                 {config.imageCount} - {formatTime(config.secondsPerImage)}

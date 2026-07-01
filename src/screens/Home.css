@@ -7,6 +7,7 @@ button:disabled {
   display: grid;
   grid-template-columns: 0.5fr 10fr 0.5fr;
   margin-bottom: 40px;
+  color: #522104;
 }
 
 .source-control-area {
