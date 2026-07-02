@@ -34,15 +34,33 @@ button:disabled {
   width: fit-content;
 }
 
-.submit-buttons {
-  position: absolute;
-  width: 100%;
+.source-view {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  bottom: 10px;
+  justify-content: flex-start;
+  max-height: 40vh;
+  height: 40vh;
+  margin-top: 10px;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  border-radius: 1mm;
+  border-style: solid;
+  border-left-style: none;
+  border-right-style: none;
+  padding-top: 10px;
+  padding-bottom: 20px;
 }
 
+.source-entry {
+  display: grid;
+  grid-template-columns: 0.2fr 5fr 0.2fr;
+  grid-template-areas: ". a b";
+  margin-top: 20px;
+}
+
+.init-sources-button {
+  margin: auto;
+}
 
 .num-images-selection {
   display: grid;
@@ -75,42 +93,59 @@ button:disabled {
   column-gap: 10px;
 }
 
-.go-button {
+.save-config-area {
+  display: grid;
   margin-top: 20px;
-}
-
-.saved-config-list {
-  display: flex;
-  margin-top: 20px;
-  column-gap: 40px;
-  row-gap: 20px;
-  flex-wrap: wrap;
+  grid-template-columns: 1fr 0.7fr 1fr;
+  grid-template-areas:
+    ". center .";
+  align-items: center;
   justify-content: center;
 }
 
 .save-config-button {
+  grid-area: center;
+}
+
+.submit-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   margin-top: 20px;
 }
 
-.source-view {
-  max-height: 40vh;
-  margin-top: 10px;
-  overflow-y: scroll;
-  scrollbar-width: none;
-  border-radius: 1mm;
-  border-style: solid;
-  border-left-style: none;
-  border-right-style: none;
-  padding-top: 10px;
-  padding-bottom: 20px;
-}
-
-.source-entry {
+.go-button-area {
   display: grid;
-  grid-template-columns: 0.2fr 5fr 0.2fr;
-  grid-template-areas: ". a b";
-  margin-top: 20px;
+  grid-template-columns: 2fr 2fr 2fr;
+  grid-template-areas:
+    ". center .";
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
+
+.go-button {
+  grid-area: center;
+  width: 100%;
+}
+
+.saved-config-list {
+  display: flex;
+  scrollbar-width: none;
+  margin-top: 10px;
+  column-gap: 40px;
+  padding: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  justify-content: center;
+}
+
+.full-config-button {
+  flex: 0 0 auto;
+}
+
+
 
 .source-entry-main-button {
   grid-area: a;
@@ -132,4 +167,10 @@ button:disabled {
 .config-x-button {
   font-size: 10px;
   margin-left: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .header {
+    color: #fff;
+  }
 }

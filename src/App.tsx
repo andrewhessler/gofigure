@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { invoke } from "@tauri-apps/api/core";
 import { AppSettings, Settings } from "./screens/Settings";
-import { Home } from "./screens/Home";
+import { Home, Source } from "./screens/Home";
 import { Review } from "./screens/Review";
 import { Session } from "./screens/Session";
 import { History } from "./screens/History";
@@ -24,7 +24,15 @@ function App() {
     reviewAfterSession: false,
     noRepeatSize: 20,
     noRepeatBehavior: "no-repeat-for-n-images",
+    theme: 'light',
   });
+  const [sources, setSources] = useState<Source[]>([]);
+  const initDone = useRef(false);
+
+  async function getSources() {
+    const sources = await invoke("get_sources") as Source[];
+    setSources(sources);
+  }
 
   async function getSettings() {
     let currentSettings = await invoke("get_settings") as AppSettings;
@@ -32,7 +40,11 @@ function App() {
     setSettings({ ...currentSettings, noRepeatSize: currentSettings.noRepeatSize })
   }
   useEffect(() => {
-    getSettings();
+    if (!initDone.current) {
+      getSources();
+      getSettings();
+      initDone.current = true;
+    }
   }, [])
 
 
@@ -48,6 +60,8 @@ function App() {
         viewSettings={() => {
           setScreen({ name: "settings" });
         }}
+        sources={sources}
+        setSources={setSources}
       />)
     case "history":
       return (<History
