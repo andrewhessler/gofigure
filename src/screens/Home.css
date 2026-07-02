@@ -133,3 +133,9 @@ button:disabled {
   font-size: 10px;
   margin-left: 5px;
 }
+
+@media (prefers-color-scheme: dark) {
+  .header {
+    color: #fff;
+  }
+}
