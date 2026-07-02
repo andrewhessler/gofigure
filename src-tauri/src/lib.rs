@@ -5,7 +5,6 @@ use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::SqlitePool;
 use tauri::Manager;
 
-use crate::commands::settings::get_theme;
 use crate::queries::settings::AppSettings;
 
 mod commands;
