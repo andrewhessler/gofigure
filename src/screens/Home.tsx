@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import './Home.css';
 import { formatTime } from "../util/time";
 
@@ -9,6 +9,8 @@ interface HomeProps {
   startSession: (imageCount: number, displayTime: number, imageDirs: string[]) => void;
   viewHistory: () => void;
   viewSettings: () => void;
+  sources: Source[];
+  setSources: Dispatch<SetStateAction<Source[]>>;
 }
 
 interface ConfigReturn {
@@ -23,7 +25,7 @@ interface Config {
   imageCount: number;
 }
 
-interface Source {
+export interface Source {
   path: string;
   active: boolean;
 }
@@ -32,18 +34,13 @@ function basename(path: string) {
   return path.replace(/^.*[\\\/]/, '');
 }
 
-export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
-  const [sources, setSources] = useState<Source[] | null>(null);
+export function Home({ startSession, viewHistory, viewSettings, sources, setSources }: HomeProps) {
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
   const [configs, setConfigs] = useState<Config[] | null>(null);
 
   const initDone = useRef(false);
 
-  async function getSources() {
-    const dirs = await invoke("get_sources") as Source[];
-    setSources(dirs);
-  }
 
   async function addSources() {
     const stagedDirs = await open({
@@ -107,7 +104,6 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
 
   useEffect(() => {
     if (!initDone.current) {
-      getSources();
       getConfigs();
       initDone.current = true;
     }
