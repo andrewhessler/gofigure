@@ -5,6 +5,7 @@ use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::SqlitePool;
 use tauri::Manager;
 
+use crate::commands::settings::get_theme;
 use crate::queries::settings::AppSettings;
 
 mod commands;
@@ -49,6 +50,20 @@ pub fn run() {
                 sqlx::query_scalar("SELECT path FROM image_sources").fetch_all(&pool),
             )
             .expect("image sources should be queryable");
+
+            let theme: String = tauri::async_runtime::block_on(
+                sqlx::query_scalar("SELECT theme FROM settings").fetch_optional(&pool),
+            )
+            .expect("Should be able to attempt to fetch theme")
+            .unwrap_or("light".to_string());
+
+            let window = app
+                .get_webview_window("main")
+                .expect("should be able to get window for theme setting");
+
+            window
+                .set_theme(commands::settings::get_theme(&theme))
+                .expect("should be able to set theme on startup");
 
             let scope = app.asset_protocol_scope();
             for dir in &sources {

@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use sqlx::{Pool, Sqlite};
-use tauri::State;
+use tauri::{Manager, State, Theme};
 
 use crate::{
     queries::{self, settings::AppSettings},
@@ -24,17 +24,31 @@ pub async fn get_settings(
 
 #[tauri::command]
 pub async fn save_settings(
+    app_handle: tauri::AppHandle,
     state: State<'_, Mutex<AppData>>,
     pool: State<'_, Pool<Sqlite>>,
     settings: AppSettings,
 ) -> Result<(), CmdError> {
-    let prev_repeat_behavior = {
+    let (prev_repeat_behavior, prev_theme) = {
         let st = &mut *state
             .lock()
             .expect("State should be accessible for syncing settings");
-        st.settings.no_repeat_behavior.clone()
+        (
+            st.settings.no_repeat_behavior.clone(),
+            st.settings.theme.clone(),
+        )
     };
     queries::settings::populate_settings(&pool, settings.clone()).await?;
+
+    let window = app_handle
+        .get_webview_window("main")
+        .expect("should be able to access window for theme update");
+
+    if prev_theme != settings.theme {
+        window
+            .set_theme(get_theme(&settings.theme))
+            .expect("should be able to set theme");
+    }
 
     let repeat_cache = {
         let st = &mut *state
@@ -59,4 +73,13 @@ pub async fn save_settings(
     queries::repeat_cache::populate_repeat_cache(&pool, Vec::from(repeat_cache)).await?;
 
     Ok(())
+}
+
+pub fn get_theme(theme_string: &str) -> Option<Theme> {
+    match theme_string {
+        "light" => Some(Theme::Light),
+        "dark" => Some(Theme::Dark),
+        "system" => None,
+        _ => None,
+    }
 }

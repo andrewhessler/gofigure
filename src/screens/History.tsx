@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import './History.css';
 import { formatTime } from "../util/time";
 
@@ -19,6 +19,7 @@ type HistoryEntry = {
 
 export function History({ closeHistory, openReview }: { closeHistory: () => void, openReview: (images: string[]) => void, }) {
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[] | null>(null);
+  const initDone = useRef(false);
 
   async function getHistoryEntries() {
     const entries = await invoke("get_history") as HistoryReturn[];
@@ -34,7 +35,10 @@ export function History({ closeHistory, openReview }: { closeHistory: () => void
 
 
   useEffect(() => {
-    getHistoryEntries();
+    if (!initDone.current) {
+      getHistoryEntries();
+      initDone.current = true;
+    }
   }, [])
 
   return (

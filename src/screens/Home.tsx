@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import './Home.css';
 import { formatTime } from "../util/time";
 
@@ -37,6 +37,8 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
   const [count, setCount] = useState<string>('5');
   const [time, setTime] = useState<string>('60');
   const [configs, setConfigs] = useState<Config[] | null>(null);
+
+  const initDone = useRef(false);
 
   async function getSources() {
     const dirs = await invoke("get_sources") as Source[];
@@ -104,8 +106,11 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
   }
 
   useEffect(() => {
-    getSources();
-    getConfigs();
+    if (!initDone.current) {
+      getSources();
+      getConfigs();
+      initDone.current = true;
+    }
   }, [])
 
   return (
@@ -127,7 +132,7 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
             <button onClick={() => toggleSource(source)} className={"source-entry-main-button color-2" + (source.active ? "" : " disabled")}>{basename(source.path)}</button>
             <button className="x-button" onClick={() => deleteSources([source.path])}>x</button>
           </div>
-        )) : <button onClick={addSources}>Add Sources</button>}
+        )) : <button className="init-sources-button" onClick={addSources}>Add Sources</button>}
       </div>
       <div className="num-images-selection">
         Number of images:
@@ -153,13 +158,17 @@ export function Home({ startSession, viewHistory, viewSettings }: HomeProps) {
         </div>
         <input className="image-display-time color-2" value={time} onInput={(e) => setTime(e.currentTarget.value)} />
       </div>
-      <button className="save-config-button" onClick={() => saveConfig()}>Save Config</button>
+      <div className="save-config-area">
+        <button className="save-config-button" onClick={() => saveConfig()}>Save Config</button>
+      </div>
       <div className="submit-buttons">
-        <button className="go-button color-1"
-          onClick={() => startSession(parseInt(count), parseInt(time), sources!.filter((source) => source.active).map((source) => source.path))}
-          disabled={!sources?.filter((source) => source.active).length}>
-          Go Figure!
-        </button>
+        <div className="go-button-area">
+          <button className="go-button color-1"
+            onClick={() => startSession(parseInt(count), parseInt(time), sources!.filter((source) => source.active).map((source) => source.path))}
+            disabled={!sources?.filter((source) => source.active).length}>
+            Go Figure!
+          </button>
+        </div>
         <div className="saved-config-list">
           {configs?.map((config) => {
             return <div className="full-config-button">

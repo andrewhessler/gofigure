@@ -18,6 +18,12 @@
   width: fit-content;
 }
 
+.theme-container {
+  display: flex;
+  column-gap: 10px;
+  align-items: center;
+}
+
 .bottom-buttons {
   display: flex;
   column-gap: 10px;

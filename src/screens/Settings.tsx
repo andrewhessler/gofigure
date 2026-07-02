@@ -3,6 +3,8 @@ import "./Settings.css";
 
 type RepeatBehavior = "no-repeat-for-n-images" | "no-repeat-for-session" | "allow-repeats-always";
 
+type Themes = 'light' | 'dark' | 'system';
+
 export type AppSettings = {
   soundAt15: boolean;
   soundAt60: boolean;
@@ -11,6 +13,7 @@ export type AppSettings = {
   noRepeatBehavior: RepeatBehavior;
   noRepeatSize: number; // parse to number when sending to backend?
   reviewAfterSession: boolean;
+  theme: 'light' | 'dark' | 'system';
 }
 
 export function Settings({ saveSettings, exitSettings, currentSettings }:
@@ -61,6 +64,14 @@ export function Settings({ saveSettings, exitSettings, currentSettings }:
           <input className="no-repeat-number" type="text" value={noRepeatSize} onChange={(e) => setNoRepeatSize(e.target.value)}
           /> : <></>
         }
+      </label>
+      <label className="theme-container">
+        Theme:
+        <select className="theme-select" value={settings.theme} onChange={(e) => setDraftSettings({ ...settings, theme: e.target.value as Themes })}>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="system">System</option>
+        </select>
       </label>
       <div className="bottom-buttons">
         <button className="bottom-button" onClick={() => {

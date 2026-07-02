@@ -16,6 +16,7 @@ pub struct AppSettings {
     #[sqlx(try_from = "i64")]
     pub no_repeat_size: u64,
     pub review_after_session: bool,
+    pub theme: String,
 }
 
 pub async fn get_settings(conn: &Pool<Sqlite>) -> anyhow::Result<AppSettings> {
@@ -50,9 +51,10 @@ pub async fn populate_settings(conn: &Pool<Sqlite>, settings: AppSettings) -> an
             sound_on_next_image,
             no_repeat_behavior, 
             no_repeat_size,
-            review_after_session
+            review_after_session,
+            theme
             )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ",
         settings.sound_at_15,
         settings.sound_at_60,
@@ -61,6 +63,7 @@ pub async fn populate_settings(conn: &Pool<Sqlite>, settings: AppSettings) -> an
         settings.no_repeat_behavior,
         no_repeat_size,
         settings.review_after_session,
+        settings.theme,
     )
     .execute(conn)
     .await?;
